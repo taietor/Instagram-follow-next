@@ -7,7 +7,7 @@ export class InstagramDataParser {
   /**
    * Parsa il file HTML dei followers
    */
-  parseFollowersHTML(htmlContent: string): InstagramFollower[] {
+  static parseFollowersHTML(htmlContent: string): InstagramFollower[] {
     const $ = cheerio.load(htmlContent);
     const followers: InstagramFollower[] = [];
 
@@ -22,7 +22,7 @@ export class InstagramDataParser {
         followers.push({
           username: username,
           url: $link.attr('href') || '',
-          date: this.parseDate(dateText)
+          date: InstagramDataParser.parseDate(dateText)
         });
       }
     });
@@ -33,7 +33,7 @@ export class InstagramDataParser {
   /**
    * Parsa il file HTML dei following
    */
-  parseFollowingHTML(htmlContent: string): InstagramFollowing[] {
+  static parseFollowingHTML(htmlContent: string): InstagramFollowing[] {
     const $ = cheerio.load(htmlContent);
     const following: InstagramFollowing[] = [];
 
@@ -48,7 +48,7 @@ export class InstagramDataParser {
         following.push({
           username: username,
           url: $link.attr('href') || '',
-          date: this.parseDate(dateText)
+          date: InstagramDataParser.parseDate(dateText)
         });
       }
     });
@@ -59,7 +59,7 @@ export class InstagramDataParser {
   /**
    * Analizza le relazioni di follow
    */
-  analyzeRelationships(
+  static analyzeRelationships(
     followers: InstagramFollower[], 
     following: InstagramFollowing[]
   ): FollowAnalysis {
@@ -94,16 +94,16 @@ export class InstagramDataParser {
   /**
    * Metodo principale per analizzare i file Instagram
    */
-  analyzeInstagramFiles(followersHtml: string, followingHtml: string): FollowAnalysis {
-    const followers = this.parseFollowersHTML(followersHtml);
-    const following = this.parseFollowingHTML(followingHtml);
-    return this.analyzeRelationships(followers, following);
+  static analyzeInstagramFiles(followersHtml: string, followingHtml: string): FollowAnalysis {
+    const followers = InstagramDataParser.parseFollowersHTML(followersHtml);
+    const following = InstagramDataParser.parseFollowingHTML(followingHtml);
+    return InstagramDataParser.analyzeRelationships(followers, following);
   }
 
   /**
    * Converte il formato data di Instagram in ISO string
    */
-  private parseDate(dateString: string): string {
+  private static parseDate(dateString: string): string {
     try {
       // Instagram date format: "Sep 24, 2025 1:44 am"
       const date = new Date(dateString);

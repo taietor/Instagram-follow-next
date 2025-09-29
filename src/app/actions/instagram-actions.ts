@@ -26,7 +26,7 @@ export async function analyzeInstagramData(): Promise<InstagramData> {
     const following = InstagramDataParser.parseFollowingHTML(followingContent);
     
     // Analizza le relazioni
-    const analysis = InstagramDataParser.analyzeFollowRelationships(followers, following);
+    const analysis = InstagramDataParser.analyzeRelationships(followers, following);
 
     return {
       followers,

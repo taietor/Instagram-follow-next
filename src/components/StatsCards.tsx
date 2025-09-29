@@ -1,3 +1,5 @@
+import { InstagramFollower, InstagramFollowing } from '@/types/instagram';
+
 interface StatsCardsProps {
   stats: {
     totalFollowers: number;
@@ -6,8 +8,8 @@ interface StatsCardsProps {
     followBackRate: number;
     followingRate: number;
     ratio: string;
-    followingNotFollowingBack: any[];
-    followersNotFollowingBack: any[];
+    followingNotFollowingBack: InstagramFollowing[];
+    followersNotFollowingBack: InstagramFollower[];
   };
 }
 

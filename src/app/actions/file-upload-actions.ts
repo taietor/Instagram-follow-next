@@ -8,10 +8,8 @@ export async function analyzeUploadedFiles(
   followingFileContent: string
 ): Promise<FollowAnalysis> {
   try {
-    const parser = new InstagramDataParser();
-    
-    // Usa il metodo principale per analizzare i file
-    const analysis = parser.analyzeInstagramFiles(followersFileContent, followingFileContent);
+    // Usa i metodi statici per analizzare i file
+    const analysis = InstagramDataParser.analyzeInstagramFiles(followersFileContent, followingFileContent);
     
     return analysis;
   } catch (error) {

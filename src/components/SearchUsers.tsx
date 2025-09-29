@@ -2,10 +2,13 @@
 
 import { useState } from 'react';
 import { searchUsers } from '@/app/actions/instagram-actions';
+import { InstagramFollower, InstagramFollowing } from '@/types/instagram';
+
+type SearchResult = (InstagramFollower | InstagramFollowing) & { status?: string };
 
 export default function SearchUsers() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
 
   const handleSearch = async () => {
@@ -84,7 +87,7 @@ export default function SearchUsers() {
                     {new Date(user.date).toLocaleDateString('it-IT')}
                   </p>
                 </div>
-                {getStatusBadge(user.status)}
+                {user.status && getStatusBadge(user.status)}
               </div>
             ))}
           </div>
