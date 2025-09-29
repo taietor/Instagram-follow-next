@@ -7,10 +7,11 @@ export class InstagramDataParser {
   /**
    * Parsa il file HTML dei followers
    */
-  static parseFollowersHTML(htmlContent: string): InstagramFollower[] {
+  parseFollowersHTML(htmlContent: string): InstagramFollower[] {
     const $ = cheerio.load(htmlContent);
     const followers: InstagramFollower[] = [];
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     $('._a6-g').each((_index: number, element: any) => {
       const $element = $(element);
       const $link = $element.find('a[href*="instagram.com"]');
@@ -32,10 +33,11 @@ export class InstagramDataParser {
   /**
    * Parsa il file HTML dei following
    */
-  static parseFollowingHTML(htmlContent: string): InstagramFollowing[] {
+  parseFollowingHTML(htmlContent: string): InstagramFollowing[] {
     const $ = cheerio.load(htmlContent);
     const following: InstagramFollowing[] = [];
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     $('._a6-g').each((_index: number, element: any) => {
       const $element = $(element);
       const $link = $element.find('a[href*="instagram.com"]');
@@ -57,7 +59,7 @@ export class InstagramDataParser {
   /**
    * Analizza le relazioni di follow
    */
-  static analyzeFollowRelationships(
+  analyzeRelationships(
     followers: InstagramFollower[], 
     following: InstagramFollowing[]
   ): FollowAnalysis {
@@ -90,9 +92,18 @@ export class InstagramDataParser {
   }
 
   /**
+   * Metodo principale per analizzare i file Instagram
+   */
+  analyzeInstagramFiles(followersHtml: string, followingHtml: string): FollowAnalysis {
+    const followers = this.parseFollowersHTML(followersHtml);
+    const following = this.parseFollowingHTML(followingHtml);
+    return this.analyzeRelationships(followers, following);
+  }
+
+  /**
    * Converte il formato data di Instagram in ISO string
    */
-  private static parseDate(dateString: string): string {
+  private parseDate(dateString: string): string {
     try {
       // Instagram date format: "Sep 24, 2025 1:44 am"
       const date = new Date(dateString);

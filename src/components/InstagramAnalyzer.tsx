@@ -1,117 +1,119 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { analyzeInstagramData, filterAndSortData, getDetailedStats, searchUsers } from '@/app/actions/instagram-actions';
-import StatsCards from './StatsCards';
-import FilterPanel from './FilterPanel';
-import UsersList from './UsersList';
-import SearchUsers from './SearchUsers';
-import LoadingSpinner from './LoadingSpinner';
-import { InstagramData } from '@/types/instagram';
+import { useState, useMemo } from 'react';
+import { ChevronLeft, ChevronRight, ExternalLink, User } from 'lucide-react';
+import { FollowAnalysis, InstagramFollower, InstagramFollowing } from '@/types/instagram';
 
-export default function InstagramAnalyzer() {
-  const [data, setData] = useState<InstagramData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'followers' | 'following' | 'mutual' | 'not_following_back' | 'followers_not_following_back'>('followers');
-  const [detailedStats, setDetailedStats] = useState<any>(null);
+interface AnalysisStats {
+  totalFollowers: number;
+  totalFollowing: number;
+  mutualFollows: number;
+  notFollowingBack: number;
+  notFollowedBy: number;
+  followRatio: number;
+  mutualRatio: number;
+}
 
-  // Carica i dati iniziali
-  useEffect(() => {
-    loadData();
-  }, []);
+interface InstagramAnalyzerProps {
+  analysis?: FollowAnalysis;
+  stats?: AnalysisStats;
+}
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const [instagramData, stats] = await Promise.all([
-        analyzeInstagramData(),
-        getDetailedStats()
-      ]);
-      
-      setData(instagramData);
-      setDetailedStats(stats);
-    } catch (err) {
-      setError('Errore nel caricamento dei dati. Assicurati che i file Instagram siano presenti nella cartella instafile.');
-      console.error('Error loading data:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+const USERS_PER_PAGE = 20;
 
-  if (loading) {
+export default function InstagramAnalyzer({ analysis }: InstagramAnalyzerProps) {
+  const [activeTab, setActiveTab] = useState<'followers' | 'following' | 'mutual' | 'not_following_back' | 'followers_not_following_back'>('not_following_back');
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const tabs = useMemo(() => [
+    { key: 'followers' as const, label: 'Followers', count: analysis?.totalFollowers || 0, icon: '👥', data: analysis?.mutualFollows || [] }, // Placeholder - we don't have all followers
+    { key: 'following' as const, label: 'Following', count: analysis?.totalFollowing || 0, icon: '➕', data: analysis ? [...analysis.mutualFollows, ...analysis.followingNotFollowingBack] : [] }, // Combine mutual + not following back
+    { key: 'mutual' as const, label: 'Reciproci', count: analysis?.mutualCount || 0, icon: '🤝', data: analysis?.mutualFollows || [] },
+    { key: 'not_following_back' as const, label: 'Non ti seguono', count: analysis?.followingNotFollowingBack.length || 0, icon: '❌', data: analysis?.followingNotFollowingBack || [] },
+    { key: 'followers_not_following_back' as const, label: 'Non segui', count: analysis?.followersNotFollowingBack.length || 0, icon: '👋', data: analysis?.followersNotFollowingBack || [] }
+  ], [analysis]);
+
+  const currentTabData = useMemo(() => {
+    const tab = tabs.find(t => t.key === activeTab);
+    return tab?.data || [];
+  }, [activeTab, tabs]);
+
+  const totalPages = Math.ceil(currentTabData.length / USERS_PER_PAGE);
+  
+  const currentData = useMemo(() => {
+    const startIndex = (currentPage - 1) * USERS_PER_PAGE;
+    return currentTabData.slice(startIndex, startIndex + USERS_PER_PAGE);
+  }, [currentTabData, currentPage]);
+
+  // Se non abbiamo dati, mostriamo un messaggio di attesa
+  if (!analysis) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <LoadingSpinner />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-        <div className="text-red-600 text-lg font-semibold mb-2">❌ Errore</div>
-        <p className="text-red-700 mb-4">{error}</p>
-        <button
-          onClick={loadData}
-          className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
-        >
-          Riprova
-        </button>
-      </div>
-    );
-  }
-
-  if (!data || !data.analysis) {
-    return (
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
-        <div className="text-yellow-600 text-lg font-semibold mb-2">⚠️ Nessun dato trovato</div>
-        <p className="text-yellow-700">
-          I file Instagram non sono stati trovati o sono vuoti. 
-          Assicurati di aver copiato i file nella cartella <code className="bg-yellow-100 px-2 py-1 rounded">instafile</code>.
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+        <div className="text-blue-600 text-lg font-semibold mb-2">📊 Pronto per l&apos;analisi</div>
+        <p className="text-blue-700">
+          Carica i tuoi file Instagram usando il form sopra per vedere l&apos;analisi dettagliata.
         </p>
       </div>
     );
   }
 
-  const tabs = [
-    { key: 'followers' as const, label: 'Followers', count: data.analysis.totalFollowers, icon: '👥' },
-    { key: 'following' as const, label: 'Following', count: data.analysis.totalFollowing, icon: '➕' },
-    { key: 'mutual' as const, label: 'Reciproci', count: data.analysis.mutualCount, icon: '🤝' },
-    { key: 'not_following_back' as const, label: 'Non ti seguono', count: data.analysis.followingNotFollowingBack.length, icon: '❌' },
-    { key: 'followers_not_following_back' as const, label: 'Non segui', count: data.analysis.followersNotFollowingBack.length, icon: '👋' }
-  ];
+  // Reset page when changing tabs
+  const handleTabChange = (tabKey: typeof activeTab) => {
+    setActiveTab(tabKey);
+    setCurrentPage(1);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('it-IT', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const showPages = 5; // Mostra max 5 numeri di pagina
+    
+    let startPage = Math.max(1, currentPage - Math.floor(showPages / 2));
+    let endPage = Math.min(totalPages, startPage + showPages - 1);
+    
+    // Adjust start if we're near the end
+    if (endPage - startPage < showPages - 1) {
+      startPage = Math.max(1, endPage - showPages + 1);
+      endPage = Math.min(totalPages, startPage + showPages - 1);
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    
+    return pages;
+  };
 
   return (
-    <div className="space-y-8">
-      {/* Statistiche principali */}
-      {detailedStats && <StatsCards stats={detailedStats} />}
-
-      {/* Ricerca utenti */}
-      <SearchUsers />
-
-      {/* Navigazione a tab */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div className="w-full max-w-7xl mx-auto space-y-6">
+      {/* Navigazione a tab - Responsive */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="border-b border-gray-200">
-          <nav className="flex space-x-8 px-6" aria-label="Tabs">
+          <nav className="flex flex-wrap sm:flex-nowrap gap-2 sm:gap-0 p-4 sm:p-0" aria-label="Tabs">
             {tabs.map((tab) => (
               <button
                 key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
+                onClick={() => handleTabChange(tab.key)}
                 className={`
-                  py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap
+                  flex-1 sm:flex-none py-2 sm:py-4 px-3 sm:px-6 border-b-2 font-medium text-xs sm:text-sm text-center rounded-t-lg sm:rounded-none
                   ${activeTab === tab.key
-                    ? 'border-blue-500 text-blue-600'
+                    ? 'border-blue-500 text-blue-600 bg-blue-50 sm:bg-transparent'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }
                 `}
               >
-                <span className="flex items-center space-x-2">
-                  <span>{tab.icon}</span>
-                  <span>{tab.label}</span>
-                  <span className="bg-gray-100 text-gray-600 py-0.5 px-2 rounded-full text-xs">
+                <span className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2">
+                  <span className="text-base sm:text-sm">{tab.icon}</span>
+                  <span className="hidden sm:inline">{tab.label}</span>
+                  <span className="sm:hidden text-xs">{tab.label.split(' ')[0]}</span>
+                  <span className="bg-gray-100 text-gray-600 py-0.5 px-1.5 rounded-full text-xs font-semibold">
                     {tab.count.toLocaleString()}
                   </span>
                 </span>
@@ -120,11 +122,133 @@ export default function InstagramAnalyzer() {
           </nav>
         </div>
 
-        {/* Pannello filtri */}
-        <FilterPanel activeTab={activeTab} />
+        {/* Header con info */}
+        <div className="p-4 sm:p-6 border-b border-gray-100 bg-gray-50">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-800">
+              {tabs.find(t => t.key === activeTab)?.label}
+            </h3>
+            <div className="text-sm text-gray-600">
+              Mostrando {Math.min(USERS_PER_PAGE, currentData.length)} di {currentTabData.length} utenti
+              {totalPages > 1 && (
+                <span className="ml-2">
+                  (Pagina {currentPage} di {totalPages})
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
 
-        {/* Lista utenti */}
-        <UsersList type={activeTab} />
+        {/* Lista utenti - Grid responsive */}
+        <div className="p-4 sm:p-6">
+          {currentData.length > 0 ? (
+            <div className="grid gap-3 sm:gap-4">
+              {currentData.map((user: InstagramFollower | InstagramFollowing, index) => (
+                <div key={`${user.username}-${index}`} className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
+                  <div className="flex items-center space-x-3 flex-1 min-w-0">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white font-semibold text-sm sm:text-base flex-shrink-0">
+                      {user.username.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium text-gray-900 truncate text-sm sm:text-base">
+                        @{user.username}
+                      </div>
+                      <p className="text-xs sm:text-sm text-gray-500">
+                        {formatDate(user.date)}
+                      </p>
+                    </div>
+                  </div>
+                  <a
+                    href={user.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ml-2 flex items-center gap-1 text-blue-600 hover:text-blue-800 text-xs sm:text-sm font-medium flex-shrink-0 bg-blue-50 hover:bg-blue-100 px-2 sm:px-3 py-1 sm:py-1.5 rounded-md transition-colors"
+                  >
+                    <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">Visualizza</span>
+                  </a>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 text-gray-500">
+              <User className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <p className="text-lg font-medium">Nessun utente trovato</p>
+              <p className="text-sm">Non ci sono utenti in questa categoria.</p>
+            </div>
+          )}
+        </div>
+
+        {/* Paginazione */}
+        {totalPages > 1 && (
+          <div className="border-t border-gray-200 px-4 py-3 sm:px-6 sm:py-4 bg-gray-50">
+            <div className="flex items-center justify-between">
+              {/* Info mobile */}
+              <div className="flex-1 flex justify-between sm:hidden">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Precedente
+                </button>
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Successivo
+                </button>
+              </div>
+              
+              {/* Paginazione desktop */}
+              <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm text-gray-700">
+                    Mostrando <span className="font-medium">{(currentPage - 1) * USERS_PER_PAGE + 1}</span> a{' '}
+                    <span className="font-medium">{Math.min(currentPage * USERS_PER_PAGE, currentTabData.length)}</span> di{' '}
+                    <span className="font-medium">{currentTabData.length}</span> risultati
+                  </p>
+                </div>
+                
+                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                  {/* Previous button */}
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  
+                  {/* Page numbers */}
+                  {getPageNumbers().map(page => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                        page === currentPage
+                          ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                          : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                  
+                  {/* Next button */}
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </nav>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import FileUploader from '@/components/FileUploader';
 import InstagramAnalyzer from '@/components/InstagramAnalyzer';
+import InstagramTutorial from '@/components/InstagramTutorial';
 import { analyzeUploadedFiles, getAnalysisStats } from '@/app/actions/file-upload-actions';
 import { FollowAnalysis } from '@/types/instagram';
 
@@ -119,7 +120,7 @@ export default function Home() {
           </div>
 
           {/* Componente analizzatore completo */}
-          <InstagramAnalyzer />
+          <InstagramAnalyzer analysis={analysis} />
         </div>
       </div>
     );
@@ -127,6 +128,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
+      <InstagramTutorial />
       <FileUploader onFilesUploaded={handleFilesUploaded} isLoading={isLoading} />
       
       {error && (
