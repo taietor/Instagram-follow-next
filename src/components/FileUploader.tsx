@@ -158,24 +158,24 @@ export default function FileUploader({ onFilesUploaded, isLoading = false }: Fil
           disabled={isLoading}
         />
         
-        <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-        <p className="text-lg font-medium text-gray-700 mb-2">
+        <Upload className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-3 sm:mb-4" />
+        <p className="text-base sm:text-lg font-medium text-gray-700 mb-2 px-2">
           Trascina qui i file HTML o{' '}
           <label htmlFor="file-upload" className="text-blue-600 hover:text-blue-700 cursor-pointer underline">
             selezionali
           </label>
         </p>
-        <p className="text-sm text-gray-500">
-          Carica <code>followers_1.html</code> e <code>following.html</code>
+        <p className="text-xs sm:text-sm text-gray-500 px-2">
+          Carica <code className="bg-gray-100 px-1 py-0.5 rounded text-xs">followers_1.html</code> e <code className="bg-gray-100 px-1 py-0.5 rounded text-xs">following.html</code>
         </p>
       </div>
 
       {/* Errori */}
       {error && (
-        <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
-          <div className="flex items-center">
-            <AlertCircle className="w-5 h-5 text-red-500 mr-2" />
-            <p className="text-red-700">{error}</p>
+        <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-3 sm:p-4">
+          <div className="flex items-start">
+            <AlertCircle className="w-5 h-5 text-red-500 mr-2 flex-shrink-0 mt-0.5" />
+            <p className="text-red-700 text-sm sm:text-base">{error}</p>
           </div>
         </div>
       )}
@@ -183,24 +183,24 @@ export default function FileUploader({ onFilesUploaded, isLoading = false }: Fil
       {/* Lista file caricati */}
       {uploadedFiles.length > 0 && (
         <div className="mt-6">
-          <h3 className="text-lg font-semibold mb-4">File caricati:</h3>
-          <div className="space-y-2">
+          <h3 className="text-lg font-semibold mb-3 sm:mb-4 px-1">File caricati:</h3>
+          <div className="space-y-2 sm:space-y-3">
             {uploadedFiles.map((file, index) => (
-              <div key={index} className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
-                <div className="flex items-center">
-                  <FileText className={`w-5 h-5 mr-3 ${
+              <div key={index} className="flex items-center justify-between bg-gray-50 rounded-lg p-3 sm:p-4">
+                <div className="flex items-center min-w-0 flex-1">
+                  <FileText className={`w-5 h-5 mr-3 flex-shrink-0 ${
                     file.type === 'followers' ? 'text-green-600' : 'text-blue-600'
                   }`} />
-                  <div>
-                    <p className="font-medium text-gray-900">{file.name}</p>
-                    <p className="text-sm text-gray-500">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-gray-900 truncate text-sm sm:text-base">{file.name}</p>
+                    <p className="text-xs sm:text-sm text-gray-500">
                       {file.size} • {file.type === 'followers' ? 'Followers' : 'Following'}
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => removeFile(index)}
-                  className="text-red-600 hover:text-red-800 p-1"
+                  className="text-red-600 hover:text-red-800 p-1.5 sm:p-2 ml-2 flex-shrink-0 rounded-md hover:bg-red-50 transition-colors"
                   disabled={isLoading}
                 >
                   ✕
@@ -218,7 +218,7 @@ export default function FileUploader({ onFilesUploaded, isLoading = false }: Fil
             <button
               onClick={handleAnalyze}
               disabled={isLoading}
-              className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-8 py-3 rounded-lg font-semibold flex items-center mx-auto"
+              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-6 sm:px-8 py-3 rounded-lg font-semibold flex items-center justify-center transition-colors"
             >
               {isLoading ? (
                 <>
@@ -233,8 +233,8 @@ export default function FileUploader({ onFilesUploaded, isLoading = false }: Fil
               )}
             </button>
           ) : (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <p className="text-yellow-800">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 sm:p-4">
+              <p className="text-yellow-800 text-sm sm:text-base">
                 ⚠️ Carica entrambi i file (followers e following) per iniziare l&apos;analisi
               </p>
             </div>
