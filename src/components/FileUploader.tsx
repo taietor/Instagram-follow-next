@@ -119,21 +119,6 @@ export default function FileUploader({ onFilesUploaded, isLoading = false }: Fil
         <p className="text-gray-600 mb-6">
           Carica i file HTML dal tuo export Instagram per analizzare followers e following
         </p>
-        
-        {/* Istruzioni */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-left">
-          <h3 className="font-semibold text-blue-900 mb-2 flex items-center">
-            <AlertCircle className="w-5 h-5 mr-2" />
-            Come ottenere i file:
-          </h3>
-          <ol className="text-sm text-blue-800 space-y-1 ml-6 list-decimal">
-            <li>Vai su Instagram → Impostazioni → Privacy e sicurezza</li>
-            <li>Clicca su &quot;Scarica i tuoi dati&quot;</li>
-            <li>Seleziona &quot;Informazioni sull&apos;account&quot; → &quot;HTML&quot;</li>
-            <li>Scarica il file ZIP/RAR</li>
-            <li>Estrai e carica i file: <code>followers_1.html</code> e <code>following.html</code></li>
-          </ol>
-        </div>
       </div>
 
       {/* Area di upload */}

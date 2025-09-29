@@ -82,3 +82,5 @@ instagram-data/
 # Backup files
 *.backup
 *.bak
+
+.vercel
